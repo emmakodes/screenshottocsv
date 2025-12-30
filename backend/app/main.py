@@ -67,7 +67,7 @@ async def extract(
 ) -> dict[str, Any]:
     """
     Extract structured data from images.
-    
+
     Supports two providers (both BYOK - Bring Your Own Key):
     - openai: Uses user-provided X-API-Key header
     - gemini: Uses user-provided X-API-Key header
@@ -80,7 +80,9 @@ async def extract(
 
     # Validate provider
     if provider not in {"gemini", "openai"}:
-        raise HTTPException(status_code=400, detail="provider must be 'gemini' or 'openai'")
+        raise HTTPException(
+            status_code=400, detail="provider must be 'gemini' or 'openai'"
+        )
 
     # Set default model based on provider if not specified
     if not model:
@@ -89,18 +91,26 @@ async def extract(
     # Both providers require API key from user (BYOK)
     if not x_api_key:
         log.info("extract rejected: missing_x_api_key provider=%s", provider)
-        raise HTTPException(status_code=401, detail=f"Missing X-API-Key header for {provider} provider.")
+        raise HTTPException(
+            status_code=401, detail=f"Missing X-API-Key header for {provider} provider."
+        )
 
     if not images:
         log.info("extract rejected: no_images")
         raise HTTPException(status_code=400, detail="No images uploaded.")
     if len(images) > MAX_IMAGES:
-        log.info("extract rejected: too_many_images count=%s max=%s", len(images), MAX_IMAGES)
-        raise HTTPException(status_code=400, detail=f"Too many images. Max is {MAX_IMAGES}.")
+        log.info(
+            "extract rejected: too_many_images count=%s max=%s", len(images), MAX_IMAGES
+        )
+        raise HTTPException(
+            status_code=400, detail=f"Too many images. Max is {MAX_IMAGES}."
+        )
 
     if detail not in {"auto", "low", "high"}:
         log.info("extract rejected: invalid_detail detail=%s", detail)
-        raise HTTPException(status_code=400, detail="detail must be one of: auto, low, high")
+        raise HTTPException(
+            status_code=400, detail="detail must be one of: auto, low, high"
+        )
 
     try:
         schema, key_map, columns = build_rows_schema(fields)
@@ -123,7 +133,11 @@ async def extract(
     for upload in images:
         source_image = upload.filename or "image"
         if upload.content_type and upload.content_type not in ALLOWED_MIME:
-            log.info("image skipped unsupported_type filename=%s content_type=%s", source_image, upload.content_type)
+            log.info(
+                "image skipped unsupported_type filename=%s content_type=%s",
+                source_image,
+                upload.content_type,
+            )
             errors.append(
                 {
                     "source_image": source_image,
@@ -135,8 +149,13 @@ async def extract(
         try:
             img_t0 = time.perf_counter()
             image_bytes = await upload.read()
-            log.info("image start filename=%s bytes=%s provider=%s", source_image, len(image_bytes), provider)
-            
+            log.info(
+                "image start filename=%s bytes=%s provider=%s",
+                source_image,
+                len(image_bytes),
+                provider,
+            )
+
             if provider == "gemini":
                 parsed = extract_rows_from_image_gemini(
                     api_key=x_api_key,  # type: ignore
@@ -160,7 +179,7 @@ async def extract(
                     image_bytes=image_bytes,
                     detail=detail,
                 )
-            
+
             rows = parsed.get("rows", [])
             if not isinstance(rows, list):
                 raise RuntimeError("Parsed rows was not a list.")
@@ -179,7 +198,7 @@ async def extract(
                 cleaned = {k: r.get(k) for k in columns}
                 cleaned["source_image"] = source_image
                 all_rows.append(cleaned)
-                
+
         except GeminiError as e:
             # Log raw error for debugging, return user-friendly message
             log.warning("image error filename=%s error=%s", source_image, e.raw_error)
@@ -192,7 +211,12 @@ async def extract(
             # For unexpected errors, log full message but show generic user message
             error_msg = str(e)
             log.warning("image error filename=%s error=%s", source_image, error_msg)
-            errors.append({"source_image": source_image, "error": "An unexpected error occurred. Please try again."})
+            errors.append(
+                {
+                    "source_image": source_image,
+                    "error": "An unexpected error occurred. Please try again.",
+                }
+            )
 
     log.info(
         "extract done provider=%s rows=%s errors=%s elapsed_ms=%s",
