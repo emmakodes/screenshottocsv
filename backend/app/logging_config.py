@@ -31,12 +31,7 @@ def configure_logging() -> None:
 
     handler.addFilter(_DefaultRequestIdFilter())
 
-    fmt = (
-        "%(asctime)s %(levelname)s "
-        "[%(name)s] "
-        "request_id=%(request_id)s "
-        "%(message)s"
-    )
+    fmt = "%(asctime)s %(levelname)s [%(name)s] request_id=%(request_id)s %(message)s"
     handler.setFormatter(logging.Formatter(fmt=fmt))
     root.addHandler(handler)
 
@@ -47,5 +42,3 @@ class RequestIdAdapter(logging.LoggerAdapter):
         extra.setdefault("request_id", getattr(self, "request_id", "-"))
         kwargs["extra"] = extra
         return msg, kwargs
-
-

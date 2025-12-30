@@ -19,7 +19,9 @@ def parse_fields_csv(fields_csv: str) -> list[str]:
     return [f.strip() for f in (fields_csv or "").split(",") if f.strip()]
 
 
-def build_rows_schema(fields_csv: str) -> tuple[dict[str, Any], dict[str, str], list[str]]:
+def build_rows_schema(
+    fields_csv: str,
+) -> tuple[dict[str, Any], dict[str, str], list[str]]:
     """
     Build a strict JSON Schema for Structured Outputs:
       {
@@ -33,7 +35,9 @@ def build_rows_schema(fields_csv: str) -> tuple[dict[str, Any], dict[str, str], 
     """
     fields = parse_fields_csv(fields_csv)
     if not fields:
-        raise ValueError("No fields provided. Provide a comma-separated list of fields to extract.")
+        raise ValueError(
+            "No fields provided. Provide a comma-separated list of fields to extract."
+        )
 
     key_map: dict[str, str] = {}
     properties: dict[str, Any] = {}
@@ -73,5 +77,3 @@ def build_rows_schema(fields_csv: str) -> tuple[dict[str, Any], dict[str, str], 
     }
 
     return schema, key_map, columns
-
-
