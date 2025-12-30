@@ -22,7 +22,6 @@ def _parse_openai_error(error: Exception) -> OpenAIError:
     """
     raw_error = str(error)
     error_lower = raw_error.lower()
-    error_type = type(error).__name__
     
     # Rate limit errors (429)
     if "429" in raw_error or "rate" in error_lower or "too many" in error_lower:
