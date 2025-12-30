@@ -1,0 +1,14 @@
+[project]
+name = "screenshottostructureddata"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "python-multipart>=0.0.9",
+  "openai>=1.50.0",
+  "pillow>=10.4.0",
+  "google-genai>=1.0.0",
+]
